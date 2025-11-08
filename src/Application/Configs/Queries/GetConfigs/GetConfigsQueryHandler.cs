@@ -1,20 +1,25 @@
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Infrastructure.Persistence.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Configs.Queries.GetConfigs;
 
+/// <summary>
+/// Handler for GetConfigsQuery.
+/// Uses QueryUnitOfWork to read from optimized read database.
+/// </summary>
 public class GetConfigsQueryHandler : IRequestHandler<GetConfigsQuery, Result<IEnumerable<ConfigDto>>>
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly QueryUnitOfWork _queryUnitOfWork;
     private readonly ILogger<GetConfigsQueryHandler> _logger;
 
     public GetConfigsQueryHandler(
-        IUnitOfWork unitOfWork,
+        QueryUnitOfWork queryUnitOfWork,
         ILogger<GetConfigsQueryHandler> logger)
     {
-        _unitOfWork = unitOfWork;
+        _queryUnitOfWork = queryUnitOfWork;
         _logger = logger;
     }
 
@@ -26,7 +31,7 @@ public class GetConfigsQueryHandler : IRequestHandler<GetConfigsQuery, Result<IE
                 ? (System.Linq.Expressions.Expression<Func<Domain.Entities.Config, bool>>)(c => c.IsActive)
                 : null;
 
-            var configs = await _unitOfWork.Configs.GetAllAsync(filter, cancellationToken);
+            var configs = await _queryUnitOfWork.Configs.GetAllAsync(filter, cancellationToken);
 
             var configDtos = configs.Select(c => new ConfigDto
             {

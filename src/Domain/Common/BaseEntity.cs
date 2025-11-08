@@ -3,9 +3,12 @@ namespace Domain.Common;
 /// <summary>
 /// Base entity that all domain entities inherit from.
 /// Contains common properties that every entity in the system needs.
+/// Supports domain events for CQRS synchronization.
 /// </summary>
 public abstract class BaseEntity
 {
+    private readonly List<IDomainEvent> _domainEvents = new();
+
     /// <summary>
     /// Unique identifier for the entity.
     /// </summary>
@@ -26,9 +29,31 @@ public abstract class BaseEntity
     /// </summary>
     public bool IsDeleted { get; set; }
 
+    /// <summary>
+    /// Domain events raised by this entity.
+    /// Used for CQRS synchronization between write and read databases.
+    /// </summary>
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+
     protected BaseEntity()
     {
         Id = Guid.NewGuid();
         CreatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Adds a domain event to be published when changes are saved.
+    /// </summary>
+    protected void AddDomainEvent(IDomainEvent domainEvent)
+    {
+        _domainEvents.Add(domainEvent);
+    }
+
+    /// <summary>
+    /// Clears all domain events. Called after events are dispatched.
+    /// </summary>
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
     }
 }

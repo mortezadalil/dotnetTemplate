@@ -6,15 +6,16 @@ using System.Linq.Expressions;
 namespace Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Generic repository implementation.
-/// Implements common data access patterns to avoid repetition.
+/// Generic repository implementation for COMMAND operations (WRITE database).
+/// Used by command handlers to write to the source of truth.
+/// Reads in this repository go to Command DB - use QueryRepository for optimized reads.
 /// </summary>
 public class Repository<T> : IRepository<T> where T : BaseEntity
 {
-    protected readonly ApplicationDbContext _context;
+    protected readonly CommandDbContext _context;
     protected readonly DbSet<T> _dbSet;
 
-    public Repository(ApplicationDbContext context)
+    public Repository(CommandDbContext context)
     {
         _context = context;
         _dbSet = context.Set<T>();

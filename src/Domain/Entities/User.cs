@@ -1,10 +1,12 @@
 using Domain.Common;
+using Domain.Events;
 
 namespace Domain.Entities;
 
 /// <summary>
 /// Represents a user in the system.
 /// This is a pure domain entity - no annotations, no infrastructure concerns.
+/// Raises domain events for CQRS synchronization.
 /// </summary>
 public class User : BaseEntity
 {
@@ -45,6 +47,7 @@ public class User : BaseEntity
 
     /// <summary>
     /// Creates a new user. This is the only way to create a valid user.
+    /// Raises UserCreatedEvent for CQRS synchronization.
     /// </summary>
     public static User Create(string email, string fullName, string passwordHash)
     {
@@ -58,7 +61,7 @@ public class User : BaseEntity
         if (string.IsNullOrWhiteSpace(passwordHash))
             throw new ArgumentException("Password hash cannot be empty", nameof(passwordHash));
 
-        return new User
+        var user = new User
         {
             Email = email.ToLowerInvariant(),
             FullName = fullName,
@@ -66,10 +69,24 @@ public class User : BaseEntity
             IsEmailVerified = false,
             IsActive = true
         };
+
+        // Raise domain event for synchronization to read database
+        user.AddDomainEvent(new UserCreatedEvent
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            FullName = user.FullName,
+            IsEmailVerified = user.IsEmailVerified,
+            IsActive = user.IsActive,
+            CreatedAt = user.CreatedAt
+        });
+
+        return user;
     }
 
     /// <summary>
     /// Updates the user's password.
+    /// Raises UserUpdatedEvent for CQRS synchronization.
     /// </summary>
     public void UpdatePassword(string newPasswordHash)
     {
@@ -78,41 +95,84 @@ public class User : BaseEntity
 
         PasswordHash = newPasswordHash;
         ModifiedAt = DateTime.UtcNow;
+
+        RaiseUpdatedEvent();
     }
 
     /// <summary>
     /// Marks the email as verified.
+    /// Raises UserUpdatedEvent for CQRS synchronization.
     /// </summary>
     public void VerifyEmail()
     {
         IsEmailVerified = true;
         ModifiedAt = DateTime.UtcNow;
+
+        RaiseUpdatedEvent();
     }
 
     /// <summary>
     /// Records a successful login.
+    /// Raises UserUpdatedEvent for CQRS synchronization.
     /// </summary>
     public void RecordLogin()
     {
         LastLoginAt = DateTime.UtcNow;
         ModifiedAt = DateTime.UtcNow;
+
+        RaiseUpdatedEvent();
     }
 
     /// <summary>
     /// Deactivates the user account.
+    /// Raises UserUpdatedEvent for CQRS synchronization.
     /// </summary>
     public void Deactivate()
     {
         IsActive = false;
         ModifiedAt = DateTime.UtcNow;
+
+        RaiseUpdatedEvent();
     }
 
     /// <summary>
     /// Activates the user account.
+    /// Raises UserUpdatedEvent for CQRS synchronization.
     /// </summary>
     public void Activate()
     {
         IsActive = true;
         ModifiedAt = DateTime.UtcNow;
+
+        RaiseUpdatedEvent();
+    }
+
+    /// <summary>
+    /// Soft deletes the user.
+    /// Raises UserDeletedEvent for CQRS synchronization.
+    /// </summary>
+    public void Delete()
+    {
+        IsDeleted = true;
+        ModifiedAt = DateTime.UtcNow;
+
+        AddDomainEvent(new UserDeletedEvent
+        {
+            UserId = Id
+        });
+    }
+
+    private void RaiseUpdatedEvent()
+    {
+        AddDomainEvent(new UserUpdatedEvent
+        {
+            UserId = Id,
+            Email = Email,
+            FullName = FullName,
+            IsEmailVerified = IsEmailVerified,
+            IsActive = IsActive,
+            LastLoginAt = LastLoginAt,
+            ModifiedAt = ModifiedAt
+        });
     }
 }

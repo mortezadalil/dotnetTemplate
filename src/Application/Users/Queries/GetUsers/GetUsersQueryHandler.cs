@@ -1,6 +1,7 @@
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Users.Queries.GetUser;
+using Infrastructure.Persistence.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -8,18 +9,19 @@ namespace Application.Users.Queries.GetUsers;
 
 /// <summary>
 /// Handler for GetUsersQuery.
-/// Demonstrates: Pagination, filtering.
+/// Demonstrates: CQRS read from Query DB, Pagination, filtering.
+/// Uses QueryUnitOfWork to read from optimized read database.
 /// </summary>
 public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<PagedResult<UserDto>>>
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly QueryUnitOfWork _queryUnitOfWork;
     private readonly ILogger<GetUsersQueryHandler> _logger;
 
     public GetUsersQueryHandler(
-        IUnitOfWork unitOfWork,
+        QueryUnitOfWork queryUnitOfWork,
         ILogger<GetUsersQueryHandler> logger)
     {
-        _unitOfWork = unitOfWork;
+        _queryUnitOfWork = queryUnitOfWork;
         _logger = logger;
     }
 
@@ -33,8 +35,8 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<PagedR
                 : (System.Linq.Expressions.Expression<Func<Domain.Entities.User, bool>>)
                   (u => u.Email.Contains(request.SearchTerm) || u.FullName.Contains(request.SearchTerm));
 
-            // Get paginated results
-            var (users, totalCount) = await _unitOfWork.Users.GetPagedAsync(
+            // Get paginated results from Query DB (optimized for reads)
+            var (users, totalCount) = await _queryUnitOfWork.Users.GetPagedAsync(
                 request.PageNumber,
                 request.PageSize,
                 filter,

@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <!-- No dependencies. Domain is pure. -->
+  <ItemGroup>
+    <!-- MediatR Contracts for INotification (domain events) - lightweight, no full MediatR -->
+    <PackageReference Include="MediatR.Contracts" Version="2.0.1" />
+  </ItemGroup>
 
 </Project>

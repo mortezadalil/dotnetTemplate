@@ -1,5 +1,6 @@
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Infrastructure.Persistence.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -7,20 +8,21 @@ namespace Application.Users.Queries.GetUser;
 
 /// <summary>
 /// Handler for GetUserQuery.
-/// Demonstrates: Cache-aside pattern, DTO mapping.
+/// Demonstrates: CQRS read from Query DB, Cache-aside pattern, DTO mapping.
+/// Uses QueryUnitOfWork to read from optimized read database.
 /// </summary>
 public class GetUserQueryHandler : IRequestHandler<GetUserQuery, Result<UserDto>>
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly QueryUnitOfWork _queryUnitOfWork;
     private readonly ICacheService _cacheService;
     private readonly ILogger<GetUserQueryHandler> _logger;
 
     public GetUserQueryHandler(
-        IUnitOfWork unitOfWork,
+        QueryUnitOfWork queryUnitOfWork,
         ICacheService cacheService,
         ILogger<GetUserQueryHandler> logger)
     {
-        _unitOfWork = unitOfWork;
+        _queryUnitOfWork = queryUnitOfWork;
         _cacheService = cacheService;
         _logger = logger;
     }
@@ -39,8 +41,8 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, Result<UserDto>
                 return Result<UserDto>.Success(cachedUser);
             }
 
-            // Not in cache, get from database
-            var user = await _unitOfWork.Users.GetByIdAsync(request.UserId, cancellationToken);
+            // Not in cache, get from Query DB (optimized for reads)
+            var user = await _queryUnitOfWork.Users.GetByIdAsync(request.UserId, cancellationToken);
 
             if (user == null)
             {

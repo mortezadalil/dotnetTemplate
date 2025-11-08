@@ -1,4 +1,5 @@
 using Application.Common.Interfaces;
+using Infrastructure.Persistence.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -8,6 +9,7 @@ namespace Infrastructure.Configuration;
 /// <summary>
 /// Background service that refreshes AppConfig from the database every 1 minute.
 /// This allows configuration changes in the database to be picked up without restarting the app.
+/// Reads from QueryDbContext for optimized read performance.
 /// </summary>
 public class AppConfigRefreshService : BackgroundService
 {
@@ -58,10 +60,10 @@ public class AppConfigRefreshService : BackgroundService
         {
             // Create a new scope to get scoped services
             using var scope = _serviceProvider.CreateScope();
-            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            var queryUnitOfWork = scope.ServiceProvider.GetRequiredService<QueryUnitOfWork>();
 
-            // Load all active configs from database
-            var configs = await unitOfWork.Configs.GetAllAsync(
+            // Load all active configs from Query database (optimized for reads)
+            var configs = await queryUnitOfWork.Configs.GetAllAsync(
                 c => c.IsActive,
                 cancellationToken);
 

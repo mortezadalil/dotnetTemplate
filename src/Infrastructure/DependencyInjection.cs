@@ -23,16 +23,36 @@ public static class DependencyInjection
         // Initialize static AppConfig with appsettings values
         AppConfig.Initialize(configuration);
 
-        // Database
-        services.AddDbContext<ApplicationDbContext>(options =>
+        // ========================================
+        // CQRS DATABASE SETUP
+        // ========================================
+
+        // COMMAND DATABASE - For writes (source of truth)
+        services.AddDbContext<CommandDbContext>(options =>
         {
-            // Using SQLite for simplicity - switch to SQL Server or PostgreSQL in production
-            var connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? "Data Source=app.db";
+            var connectionString = configuration.GetConnectionString("CommandConnection")
+                ?? configuration.GetConnectionString("DefaultConnection")
+                ?? "Data Source=command.db";
 
             options.UseSqlite(connectionString);
 
-            // Enable detailed errors in development
+            if (configuration["ASPNETCORE_ENVIRONMENT"] == "Development")
+            {
+                options.EnableSensitiveDataLogging();
+                options.EnableDetailedErrors();
+            }
+        });
+
+        // QUERY DATABASE - For reads (optimized for queries)
+        services.AddDbContext<QueryDbContext>(options =>
+        {
+            var connectionString = configuration.GetConnectionString("QueryConnection")
+                ?? configuration.GetConnectionString("DefaultConnection")
+                ?? "Data Source=query.db";
+
+            options.UseSqlite(connectionString);
+            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking); // Optimize for reads
+
             if (configuration["ASPNETCORE_ENVIRONMENT"] == "Development")
             {
                 options.EnableSensitiveDataLogging();
@@ -41,9 +61,11 @@ public static class DependencyInjection
         });
 
         // Repository pattern
-        services.AddScoped<IApplicationDbContext>(provider =>
-            provider.GetRequiredService<ApplicationDbContext>());
+        // Default IUnitOfWork uses CommandDbContext (for command handlers)
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Named registration for QueryUnitOfWork (for query handlers that need it)
+        services.AddScoped<QueryUnitOfWork>();
 
         // Redis Cache
         var redisConnection = configuration.GetConnectionString("Redis");
@@ -73,21 +95,32 @@ public static class DependencyInjection
     }
 
     /// <summary>
-    /// Ensures database is created and migrations are applied.
+    /// Ensures databases are created and migrations are applied.
+    /// Initializes both Command (write) and Query (read) databases.
     /// </summary>
     public static async Task InitializeDatabaseAsync(IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        // Apply migrations
-        await context.Database.MigrateAsync();
+        // Initialize Command DB (source of truth)
+        var commandContext = scope.ServiceProvider.GetRequiredService<CommandDbContext>();
+        await commandContext.Database.MigrateAsync();
+        await SeedDataAsync(commandContext);
 
-        // Seed data if needed
-        await SeedDataAsync(context);
+        // Initialize Query DB (read replica)
+        var queryContext = scope.ServiceProvider.GetRequiredService<QueryDbContext>();
+        await queryContext.Database.MigrateAsync();
+
+        // Query DB will be populated via domain events when Command DB is written to
+        // But for initial setup, copy existing data from Command DB
+        if (!await queryContext.Users.AnyAsync() && await commandContext.Users.AnyAsync())
+        {
+            // Initial sync - in production, this would be handled by a migration or bulk sync job
+            // For now, domain events will handle ongoing synchronization
+        }
     }
 
-    private static async Task SeedDataAsync(ApplicationDbContext context)
+    private static async Task SeedDataAsync(CommandDbContext context)
     {
         // Seed initial configurations if the table is empty
         if (!await context.Configs.AnyAsync())

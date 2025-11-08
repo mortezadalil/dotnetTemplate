@@ -5,19 +5,20 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Unit of Work implementation.
+/// Unit of Work implementation for COMMAND operations (WRITE database).
 /// Coordinates multiple repositories and manages transactions.
+/// Used by command handlers to write to the source of truth.
 /// </summary>
 public class UnitOfWork : IUnitOfWork
 {
-    private readonly ApplicationDbContext _context;
+    private readonly CommandDbContext _context;
     private IDbContextTransaction? _transaction;
 
-    public UnitOfWork(ApplicationDbContext context)
+    public UnitOfWork(CommandDbContext context)
     {
         _context = context;
 
-        // Initialize repositories
+        // Initialize command repositories (write operations)
         Users = new Repository<User>(_context);
         Configs = new Repository<Config>(_context);
     }
