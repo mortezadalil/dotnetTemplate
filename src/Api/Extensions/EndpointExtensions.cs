@@ -10,9 +10,13 @@ public static class EndpointExtensions
 {
     public static IEndpointRouteBuilder MapEndpoints(this IEndpointRouteBuilder app)
     {
+        // Public endpoints
         app.MapUserEndpoints();
         app.MapConfigEndpoints();
-        app.MapAdminEndpoints();
+
+        // Admin endpoints (require Admin role)
+        app.MapAdminUsersEndpoints();
+        app.MapAdminConfigsEndpoints();
 
         // Add more endpoint groups here as your API grows
         // app.MapProductEndpoints();
