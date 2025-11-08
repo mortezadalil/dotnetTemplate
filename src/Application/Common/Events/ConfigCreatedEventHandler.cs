@@ -51,9 +51,11 @@ public class ConfigCreatedEventHandler : INotificationHandler<ConfigCreatedEvent
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to sync config {Key} to Query DB", notification.Key);
-            // In production, you might want to implement retry logic or dead letter queue
-            throw;
+            _logger.LogError(ex,
+                "Failed to sync config {Key} to Query DB. Manual sync may be required.",
+                notification.Key);
+            // In production, you should implement retry logic or dead letter queue
+            // For now, don't throw - Command DB save already succeeded
         }
     }
 }

@@ -45,8 +45,11 @@ public class ConfigDeletedEventHandler : INotificationHandler<ConfigDeletedEvent
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to sync config deletion {ConfigId} to Query DB", notification.ConfigId);
-            throw;
+            _logger.LogError(ex,
+                "Failed to sync config deletion {ConfigId} to Query DB. Manual sync may be required.",
+                notification.ConfigId);
+            // In production, you should implement retry logic or dead letter queue
+            // For now, don't throw - Command DB save already succeeded
         }
     }
 }

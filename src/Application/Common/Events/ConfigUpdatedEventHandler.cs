@@ -55,8 +55,11 @@ public class ConfigUpdatedEventHandler : INotificationHandler<ConfigUpdatedEvent
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to sync config update {Key} to Query DB", notification.Key);
-            throw;
+            _logger.LogError(ex,
+                "Failed to sync config update {Key} to Query DB. Manual sync may be required.",
+                notification.Key);
+            // In production, you should implement retry logic or dead letter queue
+            // For now, don't throw - Command DB save already succeeded
         }
     }
 }
