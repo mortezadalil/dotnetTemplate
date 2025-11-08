@@ -1,3 +1,4 @@
+using Application.Addresses.Queries.GetUserAddresses;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Users.Queries.GetUser;
@@ -43,17 +44,47 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<PagedR
                 cancellationToken);
 
             // Map to DTOs
-            var userDtos = users.Select(u => new UserDto
+            var userDtos = new List<UserDto>();
+            foreach (var u in users)
             {
-                Id = u.Id,
-                Email = u.Email,
-                FullName = u.FullName,
-                Role = u.Role,
-                IsEmailVerified = u.IsEmailVerified,
-                IsActive = u.IsActive,
-                LastLoginAt = u.LastLoginAt,
-                CreatedAt = u.CreatedAt
-            });
+                List<AddressDto>? addresses = null;
+
+                // Include addresses if requested
+                if (request.IncludeAddresses)
+                {
+                    var userAddresses = await _queryUnitOfWork.Addresses
+                        .FindAllAsync(a => a.UserId == u.Id, cancellationToken);
+
+                    addresses = userAddresses.Select(a => new AddressDto
+                    {
+                        Id = a.Id,
+                        UserId = a.UserId,
+                        Street = a.Street,
+                        Street2 = a.Street2,
+                        City = a.City,
+                        State = a.State,
+                        PostalCode = a.PostalCode,
+                        Country = a.Country,
+                        Label = a.Label,
+                        IsDefault = a.IsDefault,
+                        PhoneNumbers = a.Phones.Select(p => p.Number).ToList(),
+                        CreatedAt = a.CreatedAt
+                    }).ToList();
+                }
+
+                userDtos.Add(new UserDto
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    FullName = u.FullName,
+                    Role = u.Role,
+                    IsEmailVerified = u.IsEmailVerified,
+                    IsActive = u.IsActive,
+                    LastLoginAt = u.LastLoginAt,
+                    CreatedAt = u.CreatedAt,
+                    Addresses = addresses
+                });
+            }
 
             var result = new PagedResult<UserDto>
             {

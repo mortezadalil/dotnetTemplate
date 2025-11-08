@@ -31,6 +31,7 @@ public class CommandDbContext : DbContext, IApplicationDbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Config> Configs => Set<Config>();
+    public DbSet<Address> Addresses => Set<Address>();
     public DbSet<OutboxEvent> OutboxEvents => Set<OutboxEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

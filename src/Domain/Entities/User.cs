@@ -47,6 +47,12 @@ public class User : BaseEntity
     public DateTime? LastLoginAt { get; private set; }
 
     /// <summary>
+    /// User's addresses.
+    /// </summary>
+    private readonly List<Address> _addresses = new();
+    public IReadOnlyCollection<Address> Addresses => _addresses.AsReadOnly();
+
+    /// <summary>
     /// Private constructor for EF Core.
     /// </summary>
     private User() { }

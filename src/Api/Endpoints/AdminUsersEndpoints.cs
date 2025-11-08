@@ -23,19 +23,21 @@ public static class AdminUsersEndpoints
             .RequireAuthorization(policy => policy.RequireRole(UserRole.Admin.ToString()))
             .WithOpenApi();
 
-        // GET /api/admin/users - List users with filtering and pagination
+        // GET /api/admin/users - List users with filtering and pagination (includes addresses)
         users.MapGet("/", async (
             [FromServices] IMediator mediator,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] string? search = null,
+            [FromQuery] bool includeAddresses = true,
             CancellationToken ct = default) =>
         {
             var query = new GetUsersQuery
             {
                 PageNumber = page,
                 PageSize = pageSize,
-                SearchTerm = search
+                SearchTerm = search,
+                IncludeAddresses = includeAddresses
             };
 
             var result = await mediator.Send(query, ct);
@@ -45,7 +47,7 @@ public static class AdminUsersEndpoints
                 : Results.BadRequest(result.Error);
         })
         .WithName("GetUsersAdmin")
-        .WithSummary("Get paginated list of users with optional search filter")
+        .WithSummary("Get paginated list of users with addresses (Admin only)")
         .Produces<PagedResult<UserDto>>(200)
         .Produces<string>(400);
 

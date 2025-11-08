@@ -144,6 +144,9 @@ public class OutboxProcessor : BackgroundService
                 nameof(ConfigCreatedEvent) => typeof(ConfigCreatedEvent),
                 nameof(ConfigUpdatedEvent) => typeof(ConfigUpdatedEvent),
                 nameof(ConfigDeletedEvent) => typeof(ConfigDeletedEvent),
+                "AddressCreatedEvent" => typeof(Domain.Events.AddressCreatedEvent),
+                "AddressUpdatedEvent" => typeof(Domain.Events.AddressUpdatedEvent),
+                "AddressDeletedEvent" => typeof(Domain.Events.AddressDeletedEvent),
                 _ => null
             };
 

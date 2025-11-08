@@ -1,3 +1,4 @@
+using Application.Addresses.Queries.GetUserAddresses;
 using Application.Common.Models;
 using Domain.Enums;
 using MediatR;
@@ -11,6 +12,7 @@ namespace Application.Users.Queries.GetUser;
 public record GetUserQuery : IRequest<Result<UserDto>>
 {
     public Guid UserId { get; init; }
+    public bool IncludeAddresses { get; init; } = false;
 }
 
 /// <summary>
@@ -27,4 +29,5 @@ public record UserDto
     public bool IsActive { get; init; }
     public DateTime? LastLoginAt { get; init; }
     public DateTime CreatedAt { get; init; }
+    public List<AddressDto>? Addresses { get; init; }
 }

@@ -14,6 +14,9 @@ public static class EndpointExtensions
         app.MapUserEndpoints();
         app.MapConfigEndpoints();
 
+        // Address endpoints (require authentication, multi-role)
+        app.MapAddressEndpoints();
+
         // Admin endpoints (require Admin role)
         app.MapAdminUsersEndpoints();
         app.MapAdminConfigsEndpoints();
