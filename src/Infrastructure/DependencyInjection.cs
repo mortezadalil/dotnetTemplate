@@ -1,5 +1,6 @@
 using Application.Common.Interfaces;
 using Infrastructure.Authentication;
+using Infrastructure.BackgroundServices;
 using Infrastructure.Caching;
 using Infrastructure.Configuration;
 using Infrastructure.Persistence;
@@ -90,6 +91,7 @@ public static class DependencyInjection
 
         // Background Services
         services.AddHostedService<AppConfigRefreshService>();
+        services.AddHostedService<OutboxProcessor>(); // Processes failed events from outbox
 
         return services;
     }
