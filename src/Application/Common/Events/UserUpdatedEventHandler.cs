@@ -45,6 +45,7 @@ public class UserUpdatedEventHandler : INotificationHandler<UserUpdatedEvent>
             // Update properties via reflection (due to private setters)
             var emailProp = typeof(Domain.Entities.User).GetProperty("Email")!;
             var fullNameProp = typeof(Domain.Entities.User).GetProperty("FullName")!;
+            var roleProp = typeof(Domain.Entities.User).GetProperty("Role")!;
             var isEmailVerifiedProp = typeof(Domain.Entities.User).GetProperty("IsEmailVerified")!;
             var isActiveProp = typeof(Domain.Entities.User).GetProperty("IsActive")!;
             var lastLoginProp = typeof(Domain.Entities.User).GetProperty("LastLoginAt")!;
@@ -52,6 +53,7 @@ public class UserUpdatedEventHandler : INotificationHandler<UserUpdatedEvent>
 
             emailProp.SetValue(queryUser, notification.Email);
             fullNameProp.SetValue(queryUser, notification.FullName);
+            roleProp.SetValue(queryUser, notification.Role);
             isEmailVerifiedProp.SetValue(queryUser, notification.IsEmailVerified);
             isActiveProp.SetValue(queryUser, notification.IsActive);
             lastLoginProp.SetValue(queryUser, notification.LastLoginAt);

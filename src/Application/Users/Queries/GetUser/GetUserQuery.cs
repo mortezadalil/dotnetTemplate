@@ -1,4 +1,5 @@
 using Application.Common.Models;
+using Domain.Enums;
 using MediatR;
 
 namespace Application.Users.Queries.GetUser;
@@ -21,6 +22,7 @@ public record UserDto
     public Guid Id { get; init; }
     public string Email { get; init; } = string.Empty;
     public string FullName { get; init; } = string.Empty;
+    public UserRole Role { get; init; }
     public bool IsEmailVerified { get; init; }
     public bool IsActive { get; init; }
     public DateTime? LastLoginAt { get; init; }

@@ -1,4 +1,5 @@
 using Domain.Common;
+using Domain.Enums;
 using Domain.Events;
 
 namespace Domain.Entities;
@@ -26,6 +27,11 @@ public class User : BaseEntity
     public string PasswordHash { get; private set; } = string.Empty;
 
     /// <summary>
+    /// User's role in the system (User or Admin).
+    /// </summary>
+    public UserRole Role { get; private set; }
+
+    /// <summary>
     /// Whether the user's email has been verified.
     /// </summary>
     public bool IsEmailVerified { get; private set; }
@@ -49,7 +55,7 @@ public class User : BaseEntity
     /// Creates a new user. This is the only way to create a valid user.
     /// Raises UserCreatedEvent for CQRS synchronization.
     /// </summary>
-    public static User Create(string email, string fullName, string passwordHash)
+    public static User Create(string email, string fullName, string passwordHash, UserRole role = UserRole.User)
     {
         // Domain validation could go here
         if (string.IsNullOrWhiteSpace(email))
@@ -66,6 +72,7 @@ public class User : BaseEntity
             Email = email.ToLowerInvariant(),
             FullName = fullName,
             PasswordHash = passwordHash,
+            Role = role,
             IsEmailVerified = false,
             IsActive = true
         };
@@ -76,6 +83,7 @@ public class User : BaseEntity
             UserId = user.Id,
             Email = user.Email,
             FullName = user.FullName,
+            Role = user.Role,
             IsEmailVerified = user.IsEmailVerified,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt
@@ -148,6 +156,36 @@ public class User : BaseEntity
     }
 
     /// <summary>
+    /// Changes the user's role.
+    /// Raises UserUpdatedEvent for CQRS synchronization.
+    /// </summary>
+    public void ChangeRole(UserRole newRole)
+    {
+        Role = newRole;
+        ModifiedAt = DateTime.UtcNow;
+
+        RaiseUpdatedEvent();
+    }
+
+    /// <summary>
+    /// Promotes the user to Admin role.
+    /// Raises UserUpdatedEvent for CQRS synchronization.
+    /// </summary>
+    public void PromoteToAdmin()
+    {
+        ChangeRole(UserRole.Admin);
+    }
+
+    /// <summary>
+    /// Demotes the user to regular User role.
+    /// Raises UserUpdatedEvent for CQRS synchronization.
+    /// </summary>
+    public void DemoteToUser()
+    {
+        ChangeRole(UserRole.User);
+    }
+
+    /// <summary>
     /// Soft deletes the user.
     /// Raises UserDeletedEvent for CQRS synchronization.
     /// </summary>
@@ -169,6 +207,7 @@ public class User : BaseEntity
             UserId = Id,
             Email = Email,
             FullName = FullName,
+            Role = Role,
             IsEmailVerified = IsEmailVerified,
             IsActive = IsActive,
             LastLoginAt = LastLoginAt,

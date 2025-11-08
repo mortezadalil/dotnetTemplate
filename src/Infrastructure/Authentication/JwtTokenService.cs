@@ -39,6 +39,7 @@ public class JwtTokenService : IJwtTokenService
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Name, user.FullName),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.Role, user.Role.ToString()),
             new Claim("isEmailVerified", user.IsEmailVerified.ToString()),
             new Claim("isActive", user.IsActive.ToString())
         };

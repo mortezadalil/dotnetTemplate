@@ -43,11 +43,13 @@ public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
             // Set via reflection for private setters
             var emailProp = typeof(User).GetProperty("Email")!;
             var fullNameProp = typeof(User).GetProperty("FullName")!;
+            var roleProp = typeof(User).GetProperty("Role")!;
             var isEmailVerifiedProp = typeof(User).GetProperty("IsEmailVerified")!;
             var isActiveProp = typeof(User).GetProperty("IsActive")!;
 
             emailProp.SetValue(queryUser, notification.Email);
             fullNameProp.SetValue(queryUser, notification.FullName);
+            roleProp.SetValue(queryUser, notification.Role);
             isEmailVerifiedProp.SetValue(queryUser, notification.IsEmailVerified);
             isActiveProp.SetValue(queryUser, notification.IsActive);
 

@@ -12,6 +12,7 @@ public static class EndpointExtensions
     {
         app.MapUserEndpoints();
         app.MapConfigEndpoints();
+        app.MapAdminEndpoints();
 
         // Add more endpoint groups here as your API grows
         // app.MapProductEndpoints();

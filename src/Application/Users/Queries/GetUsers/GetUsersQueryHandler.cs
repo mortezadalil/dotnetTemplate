@@ -48,6 +48,7 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<PagedR
                 Id = u.Id,
                 Email = u.Email,
                 FullName = u.FullName,
+                Role = u.Role,
                 IsEmailVerified = u.IsEmailVerified,
                 IsActive = u.IsActive,
                 LastLoginAt = u.LastLoginAt,

@@ -56,6 +56,7 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, Result<UserDto>
                 Id = user.Id,
                 Email = user.Email,
                 FullName = user.FullName,
+                Role = user.Role,
                 IsEmailVerified = user.IsEmailVerified,
                 IsActive = user.IsActive,
                 LastLoginAt = user.LastLoginAt,

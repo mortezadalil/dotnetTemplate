@@ -41,7 +41,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
             var passwordHash = HashPassword(request.Password);
 
             // Create user using domain factory method
-            var user = User.Create(request.Email, request.FullName, passwordHash);
+            var user = User.Create(request.Email, request.FullName, passwordHash, request.Role);
 
             // Save to database
             await _unitOfWork.Users.AddAsync(user, cancellationToken);
