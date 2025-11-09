@@ -1,4 +1,11 @@
-<div dir="rtl" style="font-family: 'IRANSans', 'Tahoma', sans-serif;">
+<div dir="rtl">
+
+<style>
+@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css');
+body, div, p, h1, h2, h3, h4, h5, h6, li, td, th {
+    font-family: Vazir, Tahoma, Arial, sans-serif !important;
+}
+</style>
 
 # الگوی معماری تمیز ASP.NET Core
 
@@ -22,27 +29,31 @@
 
 ## مرور کلی معماری
 
+<div dir="ltr">
+
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                        لایه API                         │
+│                        API Layer                        │
 │  (Minimal API, Endpoints, Middleware, Authentication)   │
 └────────────────────┬────────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────────┐
-│                   زیرساخت                              │
+│                   Infrastructure                        │
 │   (EF Core, Redis, JWT, Serilog, AppConfig Service)    │
 └────────────────────┬────────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────────┐
-│                  لایه اپلیکیشن (CORE)                  │
+│                  Application (CORE)                     │
 │  (CQRS Handlers, MediatR, Validators, Interfaces)       │
 └────────────────────┬────────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────────┐
-│                      دامنه                              │
+│                      Domain                             │
 │         (Entities, Value Objects, Pure Logic)           │
 └─────────────────────────────────────────────────────────┘
 ```
+
+</div>
 
 **قانون وابستگی**: هر لایه فقط به لایه‌های زیرین خود وابسته است. دامنه هیچ وابستگی ندارد.
 
@@ -78,6 +89,8 @@
 4. Thread-safe با کالکشن‌های تغییرناپذیر
 5. در هر جایی قابل دسترسی بدون DI
 
+<div dir="ltr">
+
 ```csharp
 // استفاده در هر جایی از کد - بدون نیاز به DI!
 var jwtSecret = AppConfig.JwtSecretKey;  // از appsettings
@@ -85,53 +98,57 @@ var featureFlag = AppConfig.GetBool("Features.EnableNewUI");  // از دیتاب
 var maxUpload = AppConfig.GetInt("Limits.MaxUploadSizeMB");  // از دیتابیس
 ```
 
+</div>
+
 ---
 
 ## ساختار پروژه
 
+<div dir="ltr">
+
 ```
 CleanArchTemplate/
 ├── src/
-│   ├── Domain/                          # منطق کسب و کار خالص
+│   ├── Domain/                          # Pure business logic
 │   │   ├── Entities/
-│   │   │   ├── User.cs                 # موجودیت دامنه غنی با رویدادها
-│   │   │   └── Config.cs               # موجودیت پیکربندی
-│   │   ├── Events/                     # رویدادهای دامنه برای همگام‌سازی CQRS
+│   │   │   ├── User.cs                 # Rich domain entity with events
+│   │   │   └── Config.cs               # Configuration entity
+│   │   ├── Events/                     # Domain events for CQRS sync
 │   │   │   ├── UserCreatedEvent.cs
 │   │   │   ├── UserUpdatedEvent.cs
 │   │   │   └── UserDeletedEvent.cs
 │   │   └── Common/
-│   │       ├── BaseEntity.cs           # با پشتیبانی رویدادهای دامنه
+│   │       ├── BaseEntity.cs           # With domain events support
 │   │       ├── IDomainEvent.cs
 │   │       └── DomainEvent.cs
 │   │
-│   ├── Application/                     # قوانین کسب و کار و موارد استفاده
+│   ├── Application/                     # Business rules & use cases
 │   │   ├── Common/
 │   │   │   ├── Interfaces/             # Repository, UoW, Cache, JWT
-│   │   │   ├── Behaviors/              # رفتارهای پایپلاین MediatR
-│   │   │   ├── Models/                 # الگوی Result
-│   │   │   └── Events/                 # هندلرهای رویداد دامنه (همگام‌سازی)
+│   │   │   ├── Behaviors/              # MediatR pipeline behaviors
+│   │   │   ├── Models/                 # Result pattern
+│   │   │   └── Events/                 # Domain event handlers (sync)
 │   │   │       ├── UserCreatedEventHandler.cs
 │   │   │       ├── UserUpdatedEventHandler.cs
 │   │   │       └── UserDeletedEventHandler.cs
 │   │   ├── Users/
-│   │   │   ├── Commands/               # عملیات نوشتن → دیتابیس Command
+│   │   │   ├── Commands/               # Write operations → Command DB
 │   │   │   │   ├── CreateUser/
 │   │   │   │   └── LoginUser/
-│   │   │   └── Queries/                # عملیات خوانش → دیتابیس Query
+│   │   │   └── Queries/                # Read operations → Query DB
 │   │   │       ├── GetUser/
 │   │   │       └── GetUsers/
 │   │   └── Configs/
 │   │       └── Queries/
 │   │
-│   ├── Infrastructure/                  # نگرانی‌های خارجی
+│   ├── Infrastructure/                  # External concerns
 │   │   ├── Persistence/
-│   │   │   ├── CommandDbContext.cs     # دیتابیس نوشتن
-│   │   │   ├── QueryDbContext.cs       # دیتابیس خوانش
-│   │   │   ├── Configurations/         # پیکربندی‌های موجودیت EF Core
-│   │   │   └── Repositories/           # پیاده‌سازی Repository
-│   │   │       ├── Repository.cs       # برای دیتابیس Command
-│   │   │       ├── QueryRepository.cs  # برای دیتابیس Query
+│   │   │   ├── CommandDbContext.cs     # Write database
+│   │   │   ├── QueryDbContext.cs       # Read database
+│   │   │   ├── Configurations/         # EF Core entity configs
+│   │   │   └── Repositories/           # Repository implementations
+│   │   │       ├── Repository.cs       # For Command DB
+│   │   │       ├── QueryRepository.cs  # For Query DB
 │   │   │       ├── UnitOfWork.cs       # Command UoW
 │   │   │       └── QueryUnitOfWork.cs  # Query UoW
 │   │   ├── Caching/
@@ -139,22 +156,24 @@ CleanArchTemplate/
 │   │   ├── Authentication/
 │   │   │   └── JwtTokenService.cs
 │   │   └── Configuration/
-│   │       ├── AppConfig.cs            # کلاس پیکربندی استاتیک
+│   │       ├── AppConfig.cs            # Static config class
 │   │       └── AppConfigRefreshService.cs
 │   │
-│   └── Api/                            # رابط HTTP
-│       ├── Endpoints/                  # گروه‌های Endpoint
+│   └── Api/                            # HTTP interface
+│       ├── Endpoints/                  # Endpoint groups
 │       │   ├── UserEndpoints.cs
 │       │   └── ConfigEndpoints.cs
 │       ├── Middleware/
 │       │   └── ExceptionHandlingMiddleware.cs
-│       ├── Program.cs                  # نقطه ورود برنامه
-│       └── appsettings.json            # رشته‌های اتصال دوگانه
+│       ├── Program.cs                  # Application entry point
+│       └── appsettings.json            # Dual connection strings
 │
 ├── CleanArchTemplate.sln
 ├── global.json
 └── README.md
 ```
+
+</div>
 
 ---
 
@@ -168,30 +187,44 @@ CleanArchTemplate/
 
 ### اجرای برنامه
 
-1. **کلون و بازیابی**:
-   ```bash
-   dotnet restore
-   ```
+**1. کلون و بازیابی:**
 
-2. **اجرای API**:
-   ```bash
-   cd src/Api
-   dotnet run
-   ```
+<div dir="ltr">
 
-3. **باز کردن Swagger**:
-   به `http://localhost:5000` بروید (Swagger UI در ریشه است)
+```bash
+dotnet restore
+```
 
-4. **تست API**:
-   - ثبت‌نام کاربر: `POST /api/users/register`
-   - ورود: `POST /api/users/login` (توکن JWT برمی‌گرداند)
-   - دریافت کاربر: `GET /api/users/{id}` (نیاز به JWT دارد)
+</div>
+
+**2. اجرای API:**
+
+<div dir="ltr">
+
+```bash
+cd src/Api
+dotnet run
+```
+
+</div>
+
+**3. باز کردن Swagger:**
+
+به `http://localhost:5000` بروید (Swagger UI در ریشه است)
+
+**4. تست API:**
+
+- ثبت‌نام کاربر: `POST /api/users/register`
+- ورود: `POST /api/users/login` (توکن JWT برمی‌گرداند)
+- دریافت کاربر: `GET /api/users/{id}` (نیاز به JWT دارد)
 
 ---
 
 ## مثال‌های استفاده
 
 ### 1. ثبت‌نام کاربر جدید
+
+<div dir="ltr">
 
 ```bash
 curl -X POST http://localhost:5000/api/users/register \
@@ -203,14 +236,23 @@ curl -X POST http://localhost:5000/api/users/register \
   }'
 ```
 
+</div>
+
 **پاسخ:**
+
+<div dir="ltr">
+
 ```json
 {
   "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 }
 ```
 
+</div>
+
 ### 2. ورود و دریافت توکن JWT
+
+<div dir="ltr">
 
 ```bash
 curl -X POST http://localhost:5000/api/users/login \
@@ -221,7 +263,12 @@ curl -X POST http://localhost:5000/api/users/login \
   }'
 ```
 
+</div>
+
 **پاسخ:**
+
+<div dir="ltr">
+
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -231,16 +278,24 @@ curl -X POST http://localhost:5000/api/users/login \
 }
 ```
 
+</div>
+
 ### 3. دریافت کاربر با ID (احراز هویت شده)
+
+<div dir="ltr">
 
 ```bash
 curl -X GET http://localhost:5000/api/users/3fa85f64-5717-4562-b3fc-2c963f66afa6 \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
+</div>
+
 ### 4. استفاده از AppConfig
 
 کلاس `AppConfig` به صورت خودکار در هنگام راه‌اندازی پر می‌شود و هر دقیقه به‌روزرسانی می‌شود:
+
+<div dir="ltr">
 
 ```csharp
 // در هر کلاسی، در هر جایی از برنامه:
@@ -258,6 +313,8 @@ var emailSender = AppConfig.Get("Email.SenderAddress", "noreply@example.com");
 var lastRefresh = AppConfig.LastRefreshTime;
 ```
 
+</div>
+
 ---
 
 ## الگوهای طراحی کلیدی
@@ -268,9 +325,11 @@ var lastRefresh = AppConfig.LastRefreshTime;
 
 #### معماری
 
+<div dir="ltr">
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     جریان COMMAND (نوشتن)                   │
+│                     COMMAND FLOW (Writes)                    │
 └─────────────────────────────────────────────────────────────┘
 
 API Endpoint
@@ -279,31 +338,33 @@ Command Handler (CreateUserCommand)
     ↓
 Domain Entity (User.Create())
     ↓
-ایجاد رویداد دامنه (UserCreatedEvent)
+Raises Domain Event (UserCreatedEvent)
     ↓
-ذخیره در دیتابیس COMMAND (command.db) ✅ منبع حقیقت
+Save to COMMAND DB (command.db) ✅ Source of Truth
     ↓
-ارسال رویداد دامنه از طریق MediatR
+Dispatch Domain Event via MediatR
     ↓
 Event Handler (UserCreatedEventHandler)
     ↓
-همگام‌سازی با دیتابیس QUERY (query.db) ✅ Replica خوانش
+Sync to QUERY DB (query.db) ✅ Read Replica
 
 
 ┌─────────────────────────────────────────────────────────────┐
-│                      جریان QUERY (خوانش)                    │
+│                      QUERY FLOW (Reads)                      │
 └─────────────────────────────────────────────────────────────┘
 
 API Endpoint
     ↓
 Query Handler (GetUserQuery)
     ↓
-QueryUnitOfWork (استفاده از QueryDbContext)
+QueryUnitOfWork (uses QueryDbContext)
     ↓
-خوانش از دیتابیس QUERY (query.db) با AsNoTracking
+Read from QUERY DB (query.db) with AsNoTracking
     ↓
-برگرداندن DTO (خوانش سریع و بهینه)
+Return DTO (fast, optimized read)
 ```
+
+</div>
 
 #### چرا دو دیتابیس؟
 
@@ -325,13 +386,15 @@ QueryUnitOfWork (استفاده از QueryDbContext)
 
 وقتی یک موجودیت تغییر می‌کند، یک رویداد دامنه ایجاد می‌کند:
 
+<div dir="ltr">
+
 ```csharp
-// در User.cs
+// In User.cs
 public static User Create(string email, string fullName, string passwordHash)
 {
     var user = new User { Email = email, FullName = fullName, ... };
 
-    // ایجاد رویداد برای همگام‌سازی
+    // Raise event for synchronization
     user.AddDomainEvent(new UserCreatedEvent
     {
         UserId = user.Id,
@@ -345,34 +408,40 @@ public static User Create(string email, string fullName, string passwordHash)
 }
 ```
 
+</div>
+
 **2. ارسال خودکار رویداد**
 
 وقتی `SaveChangesAsync()` روی CommandDbContext فراخوانی می‌شود:
 
+<div dir="ltr">
+
 ```csharp
-// در CommandDbContext.cs
+// In CommandDbContext.cs
 public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
 {
-    // 1. دریافت همه رویدادهای دامنه از موجودیت‌های ردیابی شده
+    // 1. Get all domain events from tracked entities
     var domainEvents = ChangeTracker.Entries<BaseEntity>()
         .SelectMany(e => e.Entity.DomainEvents)
         .ToList();
 
-    // 2. ذخیره در دیتابیس Command ابتدا (منبع حقیقت)
+    // 2. Save to Command DB first (source of truth)
     var result = await base.SaveChangesAsync(cancellationToken);
 
-    // 3. ارسال رویدادها بعد از ذخیره موفق
+    // 3. Dispatch events AFTER successful save
     foreach (var domainEvent in domainEvents)
     {
         await _mediator.Publish(domainEvent, cancellationToken);
     }
 
-    // 4. پاک کردن رویدادها از موجودیت‌ها
+    // 4. Clear events from entities
     entity.ClearDomainEvents();
 
     return result;
 }
 ```
+
+</div>
 
 **نکته کلیدی**: رویدادها فقط بعد از ذخیره موفق دیتابیس Command ارسال می‌شوند. این سازگاری را تضمین می‌کند.
 
@@ -380,35 +449,41 @@ public override async Task<int> SaveChangesAsync(CancellationToken cancellationT
 
 هندلرهای رویداد به رویدادهای دامنه گوش می‌دهند و دیتابیس Query را به‌روزرسانی می‌کنند:
 
+<div dir="ltr">
+
 ```csharp
-// در UserCreatedEventHandler.cs
+// In UserCreatedEventHandler.cs
 public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
 {
     private readonly QueryDbContext _queryDb;
 
     public async Task Handle(UserCreatedEvent notification, CancellationToken cancellationToken)
     {
-        // همگام‌سازی کاربر با دیتابیس Query
+        // Sync user to Query DB
         var queryUser = new User
         {
             Id = notification.UserId,
             Email = notification.Email,
             FullName = notification.FullName,
-            // ... کپی همه خصوصیات از رویداد
+            // ... copy all properties from event
         };
 
         await _queryDb.Users.AddAsync(queryUser);
         await _queryDb.SaveChangesAsync();
 
-        // اگر این شکست بخورد، ذخیره دیتابیس Command قبلاً موفق بوده
-        // شکست برای مداخله/تلاش مجدد دستی لاگ می‌شود
+        // If this fails, Command DB save already succeeded
+        // Failure is logged for manual intervention/retry
     }
 }
 ```
 
+</div>
+
 #### هندلرهای Command در مقابل Query
 
 **هندلرهای Command** (نوشتن در دیتابیس Command):
+
+<div dir="ltr">
 
 ```csharp
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<Guid>>
@@ -419,15 +494,19 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
     {
         var user = User.Create(request.Email, request.FullName, passwordHash);
 
-        await _unitOfWork.Users.AddAsync(user); // نوشتن در دیتابیس Command
-        await _unitOfWork.SaveChangesAsync();   // فعال‌سازی رویدادهای دامنه
+        await _unitOfWork.Users.AddAsync(user); // Write to Command DB
+        await _unitOfWork.SaveChangesAsync();   // Triggers domain events
 
         return Result<Guid>.Success(user.Id);
     }
 }
 ```
 
+</div>
+
 **هندلرهای Query** (خوانش از دیتابیس Query):
+
+<div dir="ltr">
 
 ```csharp
 public class GetUserQueryHandler : IRequestHandler<GetUserQuery, Result<UserDto>>
@@ -436,14 +515,16 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, Result<UserDto>
 
     public async Task<Result<UserDto>> Handle(GetUserQuery request, ...)
     {
-        // خوانش سریع با AsNoTracking از دیتابیس Query
+        // Fast read with AsNoTracking from Query DB
         var user = await _queryUnitOfWork.Users.GetByIdAsync(request.UserId);
 
-        // نگاشت به DTO و برگرداندن
+        // Map to DTO and return
         return Result<UserDto>.Success(userDto);
     }
 }
 ```
+
+</div>
 
 #### مثال جریان کامل
 
@@ -500,34 +581,46 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, Result<UserDto>
 - تاخیر همگام‌سازی را در محیط تولید نظارت کنید
 
 **مدیریت شکست**:
+
+<div dir="ltr">
+
 ```csharp
-// در event handler
+// In event handler
 catch (Exception ex)
 {
-    // ذخیره دیتابیس Command موفق بود، اما همگام‌سازی دیتابیس Query شکست خورد
+    // Command DB save succeeded, but Query DB sync failed
     _logger.LogError(ex, "Failed to sync user to Query DB");
 
-    // گزینه‌های تولید:
-    // 1. صف کردن رویداد برای تلاش مجدد (با backoff نمایی)
-    // 2. استفاده از الگوی Outbox برای تحویل تضمین شده
-    // 3. کار تطابق دستی
+    // Production options:
+    // 1. Queue event for retry (with exponential backoff)
+    // 2. Use Outbox pattern for guaranteed delivery
+    // 3. Manual reconciliation job
 }
 ```
 
+</div>
+
 #### پیکربندی
+
+<div dir="ltr">
 
 ```json
 // appsettings.json
 {
   "ConnectionStrings": {
-    "CommandConnection": "Data Source=command.db",  // دیتابیس نوشتن
-    "QueryConnection": "Data Source=query.db",      // دیتابیس خوانش
-    "Redis": "localhost:6379"                       // کش اختیاری
+    "CommandConnection": "Data Source=command.db",  // Write database
+    "QueryConnection": "Data Source=query.db",      // Read database
+    "Redis": "localhost:6379"                       // Optional cache
   }
 }
 ```
 
+</div>
+
 در تولید، این‌ها می‌توانند سرورها، دیتابیس‌ها یا حتی موتورهای دیتابیس مختلفی باشند:
+
+<div dir="ltr">
+
 ```json
 {
   "ConnectionStrings": {
@@ -537,9 +630,13 @@ catch (Exception ex)
 }
 ```
 
+</div>
+
 ### 2. الگوی Result
 
 بدون استثناء برای شکست‌های کسب و کار - خطاها صریح هستند:
+
+<div dir="ltr">
 
 ```csharp
 var result = await mediator.Send(new CreateUserCommand { ... });
@@ -554,6 +651,8 @@ else
 }
 ```
 
+</div>
+
 ### 3. رفتارهای پایپلاین MediatR
 
 هر command/query از این مراحل عبور می‌کند:
@@ -561,8 +660,10 @@ else
 1. **ValidationBehavior** - قوانین FluentValidation
 2. **LoggingBehavior** - لاگ درخواست/پاسخ
 
+<div dir="ltr">
+
 ```csharp
-// اعتبارسنجی قبل از handler به صورت خودکار اجرا می‌شود
+// Validation runs automatically before handler
 public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 {
     public CreateUserCommandValidator()
@@ -573,21 +674,25 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 }
 ```
 
+</div>
+
 ### 4. Repository + Unit of Work
 
 دسترسی به داده را انتزاعی می‌کند و تراکنش‌ها را مدیریت می‌کند:
 
+<div dir="ltr">
+
 ```csharp
-// در یک command handler
+// In a command handler
 var user = User.Create(email, fullName, passwordHash);
 await _unitOfWork.Users.AddAsync(user);
 await _unitOfWork.SaveChangesAsync();
 
-// با تراکنش‌ها
+// With transactions
 await _unitOfWork.BeginTransactionAsync();
 try
 {
-    // چندین عملیات
+    // Multiple operations
     await _unitOfWork.CommitTransactionAsync();
 }
 catch
@@ -596,11 +701,15 @@ catch
 }
 ```
 
+</div>
+
 ---
 
 ## پیکربندی
 
 ### appsettings.json
+
+<div dir="ltr">
 
 ```json
 {
@@ -620,9 +729,13 @@ catch
 }
 ```
 
+</div>
+
 ### پیکربندی‌های دیتابیس
 
 پیکربندی‌ها را از طریق دیتابیس اضافه کنید که هر دقیقه به صورت خودکار به‌روزرسانی می‌شوند:
+
+<div dir="ltr">
 
 ```sql
 INSERT INTO Configs (Id, Key, Value, Description, Category, IsActive, CreatedAt)
@@ -630,19 +743,28 @@ VALUES
   (newid(), 'Features.EnableNewUI', 'true', 'Enable new UI', 'Features', 1, getutcdate());
 ```
 
+</div>
+
 دسترسی در هر جایی:
+
+<div dir="ltr">
+
 ```csharp
 if (AppConfig.GetBool("Features.EnableNewUI"))
 {
-    // استفاده از UI جدید
+    // Use new UI
 }
 ```
+
+</div>
 
 ---
 
 ## اجرا با Docker (اختیاری)
 
 ### Docker Compose برای زیرساخت
+
+<div dir="ltr">
 
 ```yaml
 version: '3.8'
@@ -660,7 +782,17 @@ services:
       - ACCEPT_EULA=Y
 ```
 
-اجرا: `docker-compose up -d`
+</div>
+
+اجرا:
+
+<div dir="ltr">
+
+```bash
+docker-compose up -d
+```
+
+</div>
 
 ---
 

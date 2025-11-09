@@ -1,4 +1,11 @@
-<div dir="rtl" style="font-family: 'IRANSans', 'Tahoma', sans-serif;">
+<div dir="rtl">
+
+<style>
+@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css');
+body, div, p, h1, h2, h3, h4, h5, h6, li, td, th {
+    font-family: Vazir, Tahoma, Arial, sans-serif !important;
+}
+</style>
 
 # نگاشت هندلر رویداد دامنه
 
@@ -6,18 +13,22 @@
 
 ## جریان انتشار رویداد
 
+<div dir="ltr">
+
 ```
 CommandDbContext.SaveChangesAsync()
   │
-  ├─ 1. جمع‌آوری رویدادهای دامنه از موجودیت‌های ردیابی شده
+  ├─ 1. Collect domain events from tracked entities
   │
-  ├─ 2. ذخیره تغییرات در دیتابیس Command
+  ├─ 2. Save changes to Command DB
   │
-  ├─ 3. انتشار هر رویداد دامنه از طریق MediatR
+  ├─ 3. Publish each domain event via MediatR
   │    └─> await _mediator.Publish(domainEvent, cancellationToken)
   │
-  └─ 4. پاک کردن رویدادهای دامنه از موجودیت‌ها
+  └─ 4. Clear domain events from entities
 ```
+
+</div>
 
 ## نگاشت رویداد دامنه → هندلر
 
@@ -51,36 +62,42 @@ MediatR از **Reflection و Dependency Injection** برای پیدا کردن �
 
 ## مثال: جریان ایجاد کاربر
 
+<div dir="ltr">
+
 ```csharp
-// 1. Command Handler کاربر را ایجاد می‌کند
+// 1. Command Handler creates user
 var user = User.Create(email, fullName, passwordHash, role);
 await _unitOfWork.Users.AddAsync(user);
-await _unitOfWork.SaveChangesAsync();  // CommandDbContext.SaveChangesAsync() را فعال می‌کند
+await _unitOfWork.SaveChangesAsync();  // Triggers CommandDbContext.SaveChangesAsync()
 
-// 2. User.Create() رویداد UserCreatedEvent را به مجموعه user.DomainEvents اضافه کرد
+// 2. User.Create() added UserCreatedEvent to user.DomainEvents collection
 
-// 3. CommandDbContext.SaveChangesAsync() رویداد دامنه را تشخیص می‌دهد:
+// 3. CommandDbContext.SaveChangesAsync() detects the domain event:
 var domainEvents = ChangeTracker.Entries<BaseEntity>()
-    .SelectMany(e => e.DomainEvents)  // [UserCreatedEvent] را دریافت می‌کند
+    .SelectMany(e => e.DomainEvents)  // Gets [UserCreatedEvent]
 
-// 4. در دیتابیس Command ذخیره می‌کند
+// 4. Saves to Command DB
 await base.SaveChangesAsync();
 
-// 5. رویداد را منتشر می‌کند
-await _mediator.Publish(domainEvent);  // domainEvent همان UserCreatedEvent است
+// 5. Publishes the event
+await _mediator.Publish(domainEvent);  // domainEvent is UserCreatedEvent
 
-// 6. MediatR به UserCreatedEventHandler مسیریابی می‌کند
-//    چون INotificationHandler<UserCreatedEvent> را پیاده‌سازی می‌کند
+// 6. MediatR routes to UserCreatedEventHandler
+//    because it implements INotificationHandler<UserCreatedEvent>
 
-// 7. UserCreatedEventHandler.Handle() اجرا می‌شود:
-//    - کاربر را در دیتابیس Query ایجاد می‌کند
-//    - همه خصوصیات را از طریق reflection همگام‌سازی می‌کند
-//    - در دیتابیس Query ذخیره می‌کند
+// 7. UserCreatedEventHandler.Handle() executes:
+//    - Creates user in Query DB
+//    - Syncs all properties via reflection
+//    - Saves to Query DB
 ```
+
+</div>
 
 ## ثبت‌نام
 
 همه هندلرهای رویداد به صورت خودکار در `src/Application/DependencyInjection.cs` ثبت می‌شوند:
+
+<div dir="ltr">
 
 ```csharp
 services.AddMediatR(config =>
@@ -88,6 +105,8 @@ services.AddMediatR(config =>
     config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
 });
 ```
+
+</div>
 
 این اسمبلی Application را اسکن می‌کند و همه پیاده‌سازی‌های `INotificationHandler<>` را ثبت می‌کند.
 

@@ -1,4 +1,11 @@
-<div dir="rtl" style="font-family: 'IRANSans', 'Tahoma', sans-serif;">
+<div dir="rtl">
+
+<style>
+@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css');
+body, div, p, h1, h2, h3, h4, h5, h6, li, td, th {
+    font-family: Vazir, Tahoma, Arial, sans-serif !important;
+}
+</style>
 
 # پیاده‌سازی الگوی Outbox
 
@@ -7,6 +14,9 @@
 این پروژه **الگوی Outbox** را برای تضمین سازگاری نهایی بین دیتابیس‌های Command و Query پیاده‌سازی می‌کند. این الگو تضمین می‌کند که رویدادهای دامنه هرگز از دست نمی‌روند، حتی اگر انتشار آن‌ها شکست بخورد.
 
 ## مشکل (قبل از الگوی Outbox)
+
+
+<div dir="ltr">
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -20,7 +30,12 @@
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+</div>
+
 ## راه‌حل (الگوی Outbox)
+
+
+<div dir="ltr">
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -36,6 +51,8 @@
 │ نتیجه: سازگاری نهایی تضمین شده                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+</div>
 
 ## معماری
 
@@ -60,6 +77,9 @@
 ## نمودار جریان
 
 ### مسیر خوشحال (رویداد با موفقیت منتشر می‌شود)
+
+
+<div dir="ltr">
 
 ```
 عملیات کاربر
@@ -90,7 +110,12 @@
     └─> پاسخ به کاربر (موفق)
 ```
 
+</div>
+
 ### مسیر شکست (انتشار رویداد شکست می‌خورد)
+
+
+<div dir="ltr">
 
 ```
 عملیات کاربر
@@ -135,7 +160,12 @@
         دیتابیس Command و Query اکنون همگام هستند ✅
 ```
 
+</div>
+
 ### مسیر شکست مداوم (حداکثر تلاش‌های مجدد تجاوز شد)
+
+
+<div dir="ltr">
 
 ```
 عملیات کاربر → Config در دیتابیس Command ایجاد شد ✅
@@ -155,9 +185,14 @@
                             └─ مداخله دستی مورد نیاز است
 ```
 
+</div>
+
 ## جزئیات پیاده‌سازی
 
 ### 1. موجودیت OutboxEvent
+
+
+<div dir="ltr">
 
 ```csharp
 public class OutboxEvent : BaseEntity
@@ -175,7 +210,12 @@ public class OutboxEvent : BaseEntity
 }
 ```
 
+</div>
+
 ### 2. یکپارچگی CommandDbContext
+
+
+<div dir="ltr">
 
 ```csharp
 public override async Task<int> SaveChangesAsync(CancellationToken ct)
@@ -218,7 +258,12 @@ public override async Task<int> SaveChangesAsync(CancellationToken ct)
 }
 ```
 
+</div>
+
 ### 3. سرویس پس‌زمینه OutboxProcessor
+
+
+<div dir="ltr">
 
 ```csharp
 public class OutboxProcessor : BackgroundService
@@ -270,6 +315,8 @@ public class OutboxProcessor : BackgroundService
 }
 ```
 
+</div>
+
 ## استراتژی Backoff نمایی
 
 تاخیرهای تلاش مجدد به صورت نمایی رشد می‌کنند تا از تحت فشار قرار دادن یک سیستم شکست خورده جلوگیری شود:
@@ -305,27 +352,47 @@ public class OutboxProcessor : BackgroundService
 ### معیارهای کلیدی برای نظارت
 
 1. **اندازه صف Outbox**: تعداد رویدادهای پردازش نشده
+
+<div dir="ltr">
+
    ```sql
    SELECT COUNT(*) FROM OutboxEvents WHERE ProcessedAt IS NULL
    ```
 
+</div>
+
 2. **رویدادهای شکست خورده**: رویدادهایی که از حداکثر تلاش‌های مجدد تجاوز کرده‌اند
+
+<div dir="ltr">
+
    ```sql
    SELECT COUNT(*) FROM OutboxEvents WHERE RetryCount >= 5
    ```
 
+</div>
+
 3. **متوسط زمان پردازش**: زمان از ایجاد تا پردازش
+
+<div dir="ltr">
+
    ```sql
    SELECT AVG(DATEDIFF(second, CreatedAt, ProcessedAt))
    FROM OutboxEvents WHERE ProcessedAt IS NOT NULL
    ```
 
+</div>
+
 4. **توزیع انواع رویداد**:
+
+<div dir="ltr">
+
    ```sql
    SELECT EventType, COUNT(*) as Count, AVG(RetryCount) as AvgRetries
    FROM OutboxEvents
    GROUP BY EventType
    ```
+
+</div>
 
 ### هشدارهای توصیه شده
 
@@ -337,6 +404,9 @@ public class OutboxProcessor : BackgroundService
 
 رویدادهایی که بعد از 5 تلاش شکست می‌خورند به صورت نرم حذف می‌شوند (IsDeleted = true):
 
+
+<div dir="ltr">
+
 ```sql
 -- مشاهده رویدادهای dead letter
 SELECT Id, EventType, RetryCount, LastError, CreatedAt
@@ -345,20 +415,35 @@ WHERE IsDeleted = true
 ORDER BY CreatedAt DESC
 ```
 
+</div>
+
 ### روش بازیابی دستی
 
 1. **بررسی شکست**:
+
+<div dir="ltr">
+
    ```sql
    SELECT * FROM OutboxEvents WHERE Id = 'failed-event-id'
    ```
 
+</div>
+
 2. **بررسی وضعیت دیتابیس Query**:
+
+<div dir="ltr">
+
    ```sql
    -- مثال: بررسی اینکه آیا کاربر در دیتابیس Query وجود دارد
    SELECT * FROM Users WHERE Id = 'user-id-from-event'
    ```
 
+</div>
+
 3. **همگام‌سازی دستی (در صورت نیاز)**:
+
+<div dir="ltr">
+
    ```csharp
    // گزینه A: دوباره صف کردن رویداد
    UPDATE OutboxEvents
@@ -369,6 +454,8 @@ ORDER BY CreatedAt DESC
    // نوشتن یک اسکریپت یک‌بار مصرف برای کپی داده از Command به Query DB
    ```
 
+</div>
+
 4. **رفع علت اصلی** قبل از صف کردن مجدد برای جلوگیری از شکست‌های تکراری
 
 ## ملاحظات کارایی
@@ -376,6 +463,9 @@ ORDER BY CreatedAt DESC
 ### بار دیتابیس
 
 - **رشد جدول Outbox**: رویدادهای قدیمی پردازش شده باید آرشیو شوند
+
+<div dir="ltr">
+
   ```sql
   -- آرشیو رویدادهای بیشتر از 30 روز قدیمی
   DELETE FROM OutboxEvents
@@ -383,12 +473,19 @@ ORDER BY CreatedAt DESC
   AND ProcessedAt < DATEADD(day, -30, GETUTCDATE())
   ```
 
+</div>
+
 - **توصیه‌های ایندکس**:
+
+<div dir="ltr">
+
   ```sql
   CREATE INDEX IX_OutboxEvents_Processing
   ON OutboxEvents(ProcessedAt, NextRetryAt)
   WHERE ProcessedAt IS NULL
   ```
+
+</div>
 
 ### پردازش دسته‌ای
 
@@ -401,6 +498,9 @@ OutboxProcessor رویدادها را در دسته‌های 100 تایی پرد
 ## استراتژی تست
 
 ### تست‌های واحد
+
+
+<div dir="ltr">
 
 ```csharp
 [Fact]
@@ -432,7 +532,12 @@ public async Task OutboxProcessor_MovesToDeadLetterAfterMaxRetries()
 }
 ```
 
+</div>
+
 ### تست‌های یکپارچگی
+
+
+<div dir="ltr">
 
 ```csharp
 [Fact]
@@ -456,17 +561,24 @@ public async Task EventualConsistency_RecoverFromQueryDbFailure()
 }
 ```
 
+</div>
+
 ## پیکربندی
 
 ### تنظیمات OutboxProcessor
 
 `OutboxProcessor.cs` را برای سفارشی‌سازی ویرایش کنید:
 
+
+<div dir="ltr">
+
 ```csharp
 private readonly TimeSpan _processingInterval = TimeSpan.FromSeconds(10);
 private const int MaxRetries = 5;
 private const int BatchSize = 100;
 ```
+
+</div>
 
 ### لاگ‌گذاری
 
@@ -481,14 +593,22 @@ OutboxProcessor در سطوح مختلف لاگ می‌کند:
 ### قبل (بدون Outbox)
 
 رویدادها به صورت مستقیم منتشر می‌شدند:
+
+<div dir="ltr">
+
 ```csharp
 await base.SaveChangesAsync(); // دیتابیس Command commit شد
 await _mediator.Publish(event); // اگر این شکست بخورد، رویداد از دست می‌رود
 ```
 
+</div>
+
 ### بعد (با Outbox)
 
 رویدادها ابتدا ذخیره می‌شوند:
+
+<div dir="ltr">
+
 ```csharp
 // ذخیره رویداد در outbox
 await OutboxEvents.AddAsync(outboxEvent);
@@ -497,6 +617,8 @@ await base.SaveChangesAsync(); // دیتابیس Command + Outbox به صورت 
 // تلاش برای انتشار فوری (خوش‌بینانه)
 await _mediator.Publish(event); // اگر این شکست بخورد، رویداد در outbox است
 ```
+
+</div>
 
 ### مراحل مهاجرت
 
