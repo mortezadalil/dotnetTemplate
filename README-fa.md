@@ -1,4 +1,4 @@
-<div dir="rtl" style="font-family: Tahoma, Arial, sans-serif; text-align: right;">
+<div dir="rtl" style="font-family: IRANSans, Vazir, Tahoma, Arial, sans-serif; text-align: right;">
 
 # الگوی معماری تمیز ASP.NET Core
 
