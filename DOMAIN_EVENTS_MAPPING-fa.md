@@ -1,12 +1,4 @@
-<div dir="rtl">
-
-<style>
-@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css');
-body, div, p, h1, h2, h3, h4, h5, h6, li, td, th {
-    font-family: Vazir, Tahoma, Arial, sans-serif !important;
-}
-</style>
-
+<div dir="rtl" style="font-family: Tahoma, Arial, sans-serif; text-align: right;">
 # نگاشت هندلر رویداد دامنه
 
 این سند نشان می‌دهد که کدام هندلرها وقتی `_mediator.Publish(domainEvent)` فراخوانی می‌شود، صدا زده می‌شوند.
