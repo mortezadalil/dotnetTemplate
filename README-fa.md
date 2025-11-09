@@ -1,4 +1,27 @@
-<div dir="rtl" style="font-family: IRANSans, Vazir, Tahoma, Arial, sans-serif; text-align: right;">
+<style>
+@font-face {
+  font-family: 'IRANSans';
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/Vazir-Regular.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/Vazir-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.persian-doc {
+  font-family: 'IRANSans', 'Vazir', 'Tahoma', 'Arial', sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
+.persian-doc code,
+.persian-doc pre {
+  direction: ltr;
+  text-align: left;
+  font-family: 'Courier New', 'Consolas', monospace;
+}
+</style>
+
+<div class="persian-doc">
 
 # الگوی معماری تمیز ASP.NET Core
 
@@ -22,8 +45,6 @@
 
 ## مرور کلی معماری
 
-<div dir="ltr">
-
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                        API Layer                        │
@@ -45,8 +66,6 @@
 │         (Entities, Value Objects, Pure Logic)           │
 └─────────────────────────────────────────────────────────┘
 ```
-
-</div>
 
 **قانون وابستگی**: هر لایه فقط به لایه‌های زیرین خود وابسته است. دامنه هیچ وابستگی ندارد.
 
@@ -82,8 +101,6 @@
 4. Thread-safe با کالکشن‌های تغییرناپذیر
 5. در هر جایی قابل دسترسی بدون DI
 
-<div dir="ltr">
-
 ```csharp
 // استفاده در هر جایی از کد - بدون نیاز به DI!
 var jwtSecret = AppConfig.JwtSecretKey;  // از appsettings
@@ -91,13 +108,9 @@ var featureFlag = AppConfig.GetBool("Features.EnableNewUI");  // از دیتاب
 var maxUpload = AppConfig.GetInt("Limits.MaxUploadSizeMB");  // از دیتابیس
 ```
 
-</div>
-
 ---
 
 ## ساختار پروژه
-
-<div dir="ltr">
 
 ```
 CleanArchTemplate/
@@ -166,8 +179,6 @@ CleanArchTemplate/
 └── README.md
 ```
 
-</div>
-
 ---
 
 ## شروع به کار
@@ -182,24 +193,16 @@ CleanArchTemplate/
 
 **1. کلون و بازیابی:**
 
-<div dir="ltr">
-
 ```bash
 dotnet restore
 ```
 
-</div>
-
 **2. اجرای API:**
-
-<div dir="ltr">
 
 ```bash
 cd src/Api
 dotnet run
 ```
-
-</div>
 
 **3. باز کردن Swagger:**
 
@@ -217,8 +220,6 @@ dotnet run
 
 ### 1. ثبت‌نام کاربر جدید
 
-<div dir="ltr">
-
 ```bash
 curl -X POST http://localhost:5000/api/users/register \
   -H "Content-Type: application/json" \
@@ -229,11 +230,7 @@ curl -X POST http://localhost:5000/api/users/register \
   }'
 ```
 
-</div>
-
 **پاسخ:**
-
-<div dir="ltr">
 
 ```json
 {
@@ -241,11 +238,7 @@ curl -X POST http://localhost:5000/api/users/register \
 }
 ```
 
-</div>
-
 ### 2. ورود و دریافت توکن JWT
-
-<div dir="ltr">
 
 ```bash
 curl -X POST http://localhost:5000/api/users/login \
@@ -256,11 +249,7 @@ curl -X POST http://localhost:5000/api/users/login \
   }'
 ```
 
-</div>
-
 **پاسخ:**
-
-<div dir="ltr">
 
 ```json
 {
@@ -271,24 +260,16 @@ curl -X POST http://localhost:5000/api/users/login \
 }
 ```
 
-</div>
-
 ### 3. دریافت کاربر با ID (احراز هویت شده)
-
-<div dir="ltr">
 
 ```bash
 curl -X GET http://localhost:5000/api/users/3fa85f64-5717-4562-b3fc-2c963f66afa6 \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
-</div>
-
 ### 4. استفاده از AppConfig
 
 کلاس `AppConfig` به صورت خودکار در هنگام راه‌اندازی پر می‌شود و هر دقیقه به‌روزرسانی می‌شود:
-
-<div dir="ltr">
 
 ```csharp
 // در هر کلاسی، در هر جایی از برنامه:
@@ -306,8 +287,6 @@ var emailSender = AppConfig.Get("Email.SenderAddress", "noreply@example.com");
 var lastRefresh = AppConfig.LastRefreshTime;
 ```
 
-</div>
-
 ---
 
 ## الگوهای طراحی کلیدی
@@ -317,8 +296,6 @@ var lastRefresh = AppConfig.LastRefreshTime;
 این الگو **CQRS واقعی** را با **دیتابیس‌های خوانش و نوشتن فیزیکی جداگانه** پیاده‌سازی می‌کند که از طریق رویدادهای دامنه همگام‌سازی می‌شوند.
 
 #### معماری
-
-<div dir="ltr">
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -357,8 +334,6 @@ Read from QUERY DB (query.db) with AsNoTracking
 Return DTO (fast, optimized read)
 ```
 
-</div>
-
 #### چرا دو دیتابیس؟
 
 **دیتابیس Command** (`command.db`):
@@ -378,8 +353,6 @@ Return DTO (fast, optimized read)
 **1. رویدادهای دامنه**
 
 وقتی یک موجودیت تغییر می‌کند، یک رویداد دامنه ایجاد می‌کند:
-
-<div dir="ltr">
 
 ```csharp
 // In User.cs
@@ -401,13 +374,9 @@ public static User Create(string email, string fullName, string passwordHash)
 }
 ```
 
-</div>
-
 **2. ارسال خودکار رویداد**
 
 وقتی `SaveChangesAsync()` روی CommandDbContext فراخوانی می‌شود:
-
-<div dir="ltr">
 
 ```csharp
 // In CommandDbContext.cs
@@ -434,15 +403,11 @@ public override async Task<int> SaveChangesAsync(CancellationToken cancellationT
 }
 ```
 
-</div>
-
 **نکته کلیدی**: رویدادها فقط بعد از ذخیره موفق دیتابیس Command ارسال می‌شوند. این سازگاری را تضمین می‌کند.
 
 **3. هندلرهای رویداد همگام‌سازی با دیتابیس Query**
 
 هندلرهای رویداد به رویدادهای دامنه گوش می‌دهند و دیتابیس Query را به‌روزرسانی می‌کنند:
-
-<div dir="ltr">
 
 ```csharp
 // In UserCreatedEventHandler.cs
@@ -470,13 +435,9 @@ public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
 }
 ```
 
-</div>
-
 #### هندلرهای Command در مقابل Query
 
 **هندلرهای Command** (نوشتن در دیتابیس Command):
-
-<div dir="ltr">
 
 ```csharp
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<Guid>>
@@ -495,11 +456,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
 }
 ```
 
-</div>
-
 **هندلرهای Query** (خوانش از دیتابیس Query):
-
-<div dir="ltr">
 
 ```csharp
 public class GetUserQueryHandler : IRequestHandler<GetUserQuery, Result<UserDto>>
@@ -516,8 +473,6 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, Result<UserDto>
     }
 }
 ```
-
-</div>
 
 #### مثال جریان کامل
 
@@ -575,8 +530,6 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, Result<UserDto>
 
 **مدیریت شکست**:
 
-<div dir="ltr">
-
 ```csharp
 // In event handler
 catch (Exception ex)
@@ -591,11 +544,7 @@ catch (Exception ex)
 }
 ```
 
-</div>
-
 #### پیکربندی
-
-<div dir="ltr">
 
 ```json
 // appsettings.json
@@ -608,11 +557,7 @@ catch (Exception ex)
 }
 ```
 
-</div>
-
 در تولید، این‌ها می‌توانند سرورها، دیتابیس‌ها یا حتی موتورهای دیتابیس مختلفی باشند:
-
-<div dir="ltr">
 
 ```json
 {
@@ -623,13 +568,9 @@ catch (Exception ex)
 }
 ```
 
-</div>
-
 ### 2. الگوی Result
 
 بدون استثناء برای شکست‌های کسب و کار - خطاها صریح هستند:
-
-<div dir="ltr">
 
 ```csharp
 var result = await mediator.Send(new CreateUserCommand { ... });
@@ -644,16 +585,12 @@ else
 }
 ```
 
-</div>
-
 ### 3. رفتارهای پایپلاین MediatR
 
 هر command/query از این مراحل عبور می‌کند:
 
 1. **ValidationBehavior** - قوانین FluentValidation
 2. **LoggingBehavior** - لاگ درخواست/پاسخ
-
-<div dir="ltr">
 
 ```csharp
 // Validation runs automatically before handler
@@ -667,13 +604,9 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 }
 ```
 
-</div>
-
 ### 4. Repository + Unit of Work
 
 دسترسی به داده را انتزاعی می‌کند و تراکنش‌ها را مدیریت می‌کند:
-
-<div dir="ltr">
 
 ```csharp
 // In a command handler
@@ -694,15 +627,11 @@ catch
 }
 ```
 
-</div>
-
 ---
 
 ## پیکربندی
 
 ### appsettings.json
-
-<div dir="ltr">
 
 ```json
 {
@@ -722,13 +651,9 @@ catch
 }
 ```
 
-</div>
-
 ### پیکربندی‌های دیتابیس
 
 پیکربندی‌ها را از طریق دیتابیس اضافه کنید که هر دقیقه به صورت خودکار به‌روزرسانی می‌شوند:
-
-<div dir="ltr">
 
 ```sql
 INSERT INTO Configs (Id, Key, Value, Description, Category, IsActive, CreatedAt)
@@ -736,11 +661,7 @@ VALUES
   (newid(), 'Features.EnableNewUI', 'true', 'Enable new UI', 'Features', 1, getutcdate());
 ```
 
-</div>
-
 دسترسی در هر جایی:
-
-<div dir="ltr">
 
 ```csharp
 if (AppConfig.GetBool("Features.EnableNewUI"))
@@ -749,15 +670,11 @@ if (AppConfig.GetBool("Features.EnableNewUI"))
 }
 ```
 
-</div>
-
 ---
 
 ## اجرا با Docker (اختیاری)
 
 ### Docker Compose برای زیرساخت
-
-<div dir="ltr">
 
 ```yaml
 version: '3.8'
@@ -775,17 +692,11 @@ services:
       - ACCEPT_EULA=Y
 ```
 
-</div>
-
 اجرا:
-
-<div dir="ltr">
 
 ```bash
 docker-compose up -d
 ```
-
-</div>
 
 ---
 

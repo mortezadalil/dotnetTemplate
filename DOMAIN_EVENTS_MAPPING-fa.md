@@ -1,11 +1,33 @@
-<div dir="rtl" style="font-family: IRANSans, Vazir, Tahoma, Arial, sans-serif; text-align: right;">
+<style>
+@font-face {
+  font-family: 'IRANSans';
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/Vazir-Regular.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/Vazir-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.persian-doc {
+  font-family: 'IRANSans', 'Vazir', 'Tahoma', 'Arial', sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
+.persian-doc code,
+.persian-doc pre {
+  direction: ltr;
+  text-align: left;
+  font-family: 'Courier New', 'Consolas', monospace;
+}
+</style>
+
+<div class="persian-doc">
+
 # نگاشت هندلر رویداد دامنه
 
 این سند نشان می‌دهد که کدام هندلرها وقتی `_mediator.Publish(domainEvent)` فراخوانی می‌شود، صدا زده می‌شوند.
 
 ## جریان انتشار رویداد
-
-<div dir="ltr">
 
 ```
 CommandDbContext.SaveChangesAsync()
@@ -19,8 +41,6 @@ CommandDbContext.SaveChangesAsync()
   │
   └─ 4. Clear domain events from entities
 ```
-
-</div>
 
 ## نگاشت رویداد دامنه → هندلر
 
@@ -54,8 +74,6 @@ MediatR از **Reflection و Dependency Injection** برای پیدا کردن �
 
 ## مثال: جریان ایجاد کاربر
 
-<div dir="ltr">
-
 ```csharp
 // 1. Command Handler creates user
 var user = User.Create(email, fullName, passwordHash, role);
@@ -83,13 +101,9 @@ await _mediator.Publish(domainEvent);  // domainEvent is UserCreatedEvent
 //    - Saves to Query DB
 ```
 
-</div>
-
 ## ثبت‌نام
 
 همه هندلرهای رویداد به صورت خودکار در `src/Application/DependencyInjection.cs` ثبت می‌شوند:
-
-<div dir="ltr">
 
 ```csharp
 services.AddMediatR(config =>
@@ -97,8 +111,6 @@ services.AddMediatR(config =>
     config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
 });
 ```
-
-</div>
 
 این اسمبلی Application را اسکن می‌کند و همه پیاده‌سازی‌های `INotificationHandler<>` را ثبت می‌کند.
 

@@ -1,12 +1,34 @@
-<div dir="rtl" style="font-family: IRANSans, Vazir, Tahoma, Arial, sans-serif; text-align: right;">
+<style>
+@font-face {
+  font-family: 'IRANSans';
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/Vazir-Regular.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/Vazir-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.persian-doc {
+  font-family: 'IRANSans', 'Vazir', 'Tahoma', 'Arial', sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
+.persian-doc code,
+.persian-doc pre {
+  direction: ltr;
+  text-align: left;
+  font-family: 'Courier New', 'Consolas', monospace;
+}
+</style>
+
+<div class="persian-doc">
+
 # مدیریت خطای Event Handler - مسئله طراحی بحرانی
 
 ## مشکل
 
 وقتی `CommandDbContext.SaveChangesAsync()` رویدادهای دامنه را منتشر می‌کند، یک پنجره بحرانی برای شکست وجود دارد:
 
-
-<div dir="ltr">
 
 ```csharp
 // خط 72: دیتابیس Command ذخیره و commit می‌شود
@@ -16,16 +38,12 @@ var result = await base.SaveChangesAsync(cancellationToken); // ✅ COMMITTED
 await _mediator.Publish(domainEvent, cancellationToken); // ❌ ممکن است شکست بخورد!
 ```
 
-</div>
-
 **مسئله:** دیتابیس Command قبلاً commit شده است. اگر event handler شکست بخورد، شما نمی‌توانید دیتابیس Command را Rollback کنید.
 
 ## رفتار ناسازگار فعلی
 
 ### UserCreatedEventHandler - استثناها را می‌بلعد
 
-
-<div dir="ltr">
 
 ```csharp
 catch (Exception ex)
@@ -34,8 +52,6 @@ catch (Exception ex)
     // پرتاب نمی‌کند - استثناء بلعیده می‌شود
 }
 ```
-
-</div>
 
 **نتیجه اگر handler شکست بخورد:**
 - ✅ دیتابیس Command: کاربر ایجاد شد
@@ -46,8 +62,6 @@ catch (Exception ex)
 ### ConfigCreatedEventHandler - استثناها را دوباره پرتاب می‌کند
 
 
-<div dir="ltr">
-
 ```csharp
 catch (Exception ex)
 {
@@ -55,8 +69,6 @@ catch (Exception ex)
     throw; // دوباره پرتاب می‌کند!
 }
 ```
-
-</div>
 
 **نتیجه اگر handler شکست بخورد:**
 - ✅ دیتابیس Command: Config ایجاد شد (قبلاً commit شده، نمی‌تواند rollback شود!)
@@ -77,8 +89,6 @@ catch (Exception ex)
 
 ### پیاده‌سازی
 
-
-<div dir="ltr">
 
 ```csharp
 public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
@@ -112,8 +122,6 @@ public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
 }
 ```
 
-</div>
-
 ### مزایا
 - ✅ دیتابیس Command همیشه موفق است
 - ✅ سازگاری نهایی از طریق صف تلاش مجدد
@@ -124,8 +132,6 @@ public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
 ### گزینه‌های پیاده‌سازی
 
 **گزینه A: صف حافظه داخلی با سرویس پس‌زمینه**
-
-<div dir="ltr">
 
 ```csharp
 public interface IEventRetryQueue
@@ -146,11 +152,7 @@ public class EventRetryBackgroundService : BackgroundService
 }
 ```
 
-</div>
-
 **گزینه B: استفاده از الگوی Outbox**
-
-<div dir="ltr">
 
 ```csharp
 // ذخیره رویدادهای شکست خورده در دیتابیس Command
@@ -169,11 +171,7 @@ public class OutboxEvent
 // بعد از N شکست به صف dead-letter منتقل می‌شود
 ```
 
-</div>
-
 **گزینه C: استفاده از صف پیام (RabbitMQ, Azure Service Bus)**
-
-<div dir="ltr">
 
 ```csharp
 catch (Exception ex)
@@ -186,16 +184,12 @@ catch (Exception ex)
 }
 ```
 
-</div>
-
 ## راه‌حل 2: Commit دو مرحله‌ای (پیچیده، توصیه نمی‌شود)
 
 استفاده از تراکنش‌های توزیع شده در هر دو دیتابیس.
 
 ### پیاده‌سازی
 
-
-<div dir="ltr">
 
 ```csharp
 using var scope = new TransactionScope(
@@ -206,8 +200,6 @@ await _queryDb.SaveChangesAsync();
 
 scope.Complete(); // هر دو commit یا هر دو rollback
 ```
-
-</div>
 
 ### مسائل
 - ❌ پیچیده و مستعد خطا
@@ -222,8 +214,6 @@ scope.Complete(); // هر دو commit یا هر دو rollback
 
 ### پیاده‌سازی
 
-
-<div dir="ltr">
 
 ```csharp
 public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -266,8 +256,6 @@ public override async Task<int> SaveChangesAsync(CancellationToken cancellationT
 }
 ```
 
-</div>
-
 ### مزایا
 - ✅ رویدادها قبل از انتشار ذخیره می‌شوند (بدون از دست رفتن رویداد)
 - ✅ سرویس پس‌زمینه می‌تواند از outbox تلاش مجدد کند
@@ -279,8 +267,6 @@ public override async Task<int> SaveChangesAsync(CancellationToken cancellationT
 
 اگر پیاده‌سازی تلاش مجدد در ابتدا خیلی پیچیده است:
 
-
-<div dir="ltr">
 
 ```csharp
 catch (Exception ex)
@@ -297,8 +283,6 @@ catch (Exception ex)
     // تیم عملیات به صورت دستی از هشدارها همگام‌سازی می‌کند
 }
 ```
-
-</div>
 
 ## رویکرد توصیه شده
 
@@ -327,8 +311,6 @@ catch (Exception ex)
 من **بلعیدن + لاگ + هشدار** را برای الان توصیه می‌کنم:
 
 
-<div dir="ltr">
-
 ```csharp
 catch (Exception ex)
 {
@@ -341,14 +323,10 @@ catch (Exception ex)
 }
 ```
 
-</div>
-
 ### رفع 2: افزودن نظارت
 
 ایجاد یک چک سلامت که تعداد رکوردها را مقایسه می‌کند:
 
-
-<div dir="ltr">
 
 ```csharp
 public class DatabaseSyncHealthCheck : IHealthCheck
@@ -370,8 +348,6 @@ public class DatabaseSyncHealthCheck : IHealthCheck
     }
 }
 ```
-
-</div>
 
 ## خلاصه
 
@@ -402,18 +378,12 @@ public class DatabaseSyncHealthCheck : IHealthCheck
 
 **قبل از الگوی Outbox:**
 
-<div dir="ltr">
-
 ```csharp
 await base.SaveChangesAsync();      // ✅ Committed
 await _mediator.Publish(event);     // ❌ اگر شکست بخورد → رویداد از دست رفت
 ```
 
-</div>
-
 **بعد از الگوی Outbox:**
-
-<div dir="ltr">
 
 ```csharp
 // ذخیره رویداد در جدول outbox
@@ -427,8 +397,6 @@ try {
     outboxEvent.RecordFailure();    // ⚠️ از outbox تلاش مجدد خواهد شد
 }
 ```
-
-</div>
 
 ### چه چیزی تغییر کرد
 
